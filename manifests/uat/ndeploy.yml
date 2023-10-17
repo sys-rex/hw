@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: py-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: py-one
+  template:
+    metadata:
+      labels:
+        app: py-one
+    spec:
+      containers:
+        - name: py-one
+          image: hubtet.azurecr.io/pyhello:v2
+          ports:
+            - containerPort: 5000

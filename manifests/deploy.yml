@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+namespace: uat
+metadata:
+  name: py-app-uat
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: py-uat
+  template:
+    metadata:
+      labels:
+        app: py-uat
+    spec:
+      containers:
+        - name: py-uat
+          image: hubtet.azurecr.io/pyhello:v2
+          ports:
+            - containerPort: 5000

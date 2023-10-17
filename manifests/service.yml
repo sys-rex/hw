@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+namespace: uat
+metadata:
+  name: py-app-uat
+  labels: 
+    app: py-uat
+spec:
+  ports:
+  - name: http
+    port: 80
+    protocol: TCP
+    targetPort: 5000
+  selector:
+    app: py-uat
+  type: LoadBalancer
+

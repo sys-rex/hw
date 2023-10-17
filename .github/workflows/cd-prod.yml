@@ -1,0 +1,74 @@
+name: deploy_to_aks_cluster_prod
+on:
+  workflow_dispatch:
+  # pull_request:
+  #   branches:
+  #   - main
+  # to set dependency, this workflow will run when "docker_build_push_acr" workflow is completed.
+  workflow_run:
+    workflows: ["docker_build_push_acr_prod"]
+    branches: [prod]
+    types: 
+      - completed
+env:
+  RGNAME: hubrg
+  AKSNAME: hubtest
+
+jobs:
+  deploy:
+    #runs-on: ubuntu-latest
+    runs-on: [self-hosted, Linux, X64, custrunner]
+    #runs-on: [self-hosted, Windows, X64, mywinvm]
+    
+    steps:
+    - uses: actions/checkout@v4
+      # with:
+      #   ref: main
+      #   submodules: true
+
+# This action is only supported in Linux runner
+    # - name: Update image tag for container test in deployment.yaml
+    #   uses: loveholidays/gitops-action-yaml-updater@v1.0
+    #   with:
+    #     mode: IMAGE_TAG
+    #     container-name: test
+    #     new-image-tag: ${{ env.TAG }}
+    #     #dir: manifests
+    #     filepath: manifests/deployment.yml
+    
+   # Set the target AKS cluster.
+    # - uses: actions/checkout@v4
+    #   # with:
+    #   #   ref: main
+    #   #   submodules: true
+
+       # Set the target AKS cluster.
+    - uses: Azure/aks-set-context@v1
+      with:
+        creds: '${{ secrets.AZURE_CREDENTIALS }}'
+        cluster-name: ${{ env.AKSNAME }}
+        resource-group: ${{ env.RGNAME }}
+
+    #install kubectl on container (runner)
+    - uses: azure/setup-kubectl@v3
+      with:
+        version: ' v1.28.2' # default is latest stable
+      id: install
+
+    - uses: Azure/k8s-create-secret@v1
+      with:
+        container-registry-url: ${{ secrets.REGISTRY_URL }}
+        container-registry-username: ${{ secrets.REGISTRY_USERNAME }}
+        container-registry-password: ${{ secrets.REGISTRY_PASSWORD }}
+        secret-name: k8s-secret
+
+        
+    ##fullstack-app/kubernetes/deployment.yaml
+
+    - uses: Azure/k8s-deploy@v4
+      with:
+        action: deploy
+        #private-cluster: true
+        manifests: |
+          manifests/prod/deploy.yml
+          manifests/prod/service.yml

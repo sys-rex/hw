@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+namespace: prod
+metadata:
+  name: py-app-prod
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: py-prod
+  template:
+    metadata:
+      labels:
+        app: py-prod
+    spec:
+      containers:
+        - name: py-prod
+          image: hubtet.azurecr.io/pyhello:v2
+          ports:
+            - containerPort: 5000
